@@ -41,7 +41,7 @@ let getV = obj => {
 };
 
 /*
-* A collision checker that accounts for rotated object
+* A collision checker for two given objects that accounts for rotation
 * Uses the Separating Axis Theorem (SAT)
 * Return true for collision between two given objects, false otherwise
 */
@@ -84,7 +84,7 @@ let checkSAT = (obj1, obj2) => {
 };
 
 /*
-* A function called to start or restart the game
+* A function called to start or restart (if gameOn) the game
 * Loads all assets required
 * Initializes and creates all game variables, sprite objects, and factories required
 * All game events occur within this function in the game loop
@@ -92,6 +92,12 @@ let checkSAT = (obj1, obj2) => {
 let gameStart = (gameOn = false) => {
     load('map-indexed.png', 'player.png', 'rock.png', 'fuel.png', 'earth.png', 'moon.png').then(
         () => {
+            /*
+            * rockArr: contains an array of individual rock objects for update and render purposes
+            * fuel: keeps track of the fuel object
+            * spawn: sets the spawn rate for rocks
+            * gameSize: keeps track of the current map size
+            */
             let rockArr = [];
             let fuel = null;
             let spawn = 60;
@@ -117,13 +123,13 @@ let gameStart = (gameOn = false) => {
                     this.x = gameSize/2
                     this.y = this.x
                     if(gameState == 1) {
-                        this.text = "You got hit\nGameover\nEnd1/3\nENTER to restart";
+                        this.text = "You got hit\nENTER to restart";
                     } else if(!gameOn) {
                         this.text = "ENTER to start";
                     } else if(gameState == 2) {
-                        this.text = "You land on the moon\nEnd2/3\nENTER to restart";
+                        this.text = "You land on the moon\nEnd1/2\nENTER to restart";
                     } else {
-                        this.text = "You returned to earth!\nEnd3/3\nENTER to restart";
+                        this.text = "You returned to earth!\nEnd2/2\nENTER to restart";
                     };
                     if(keyPressed('enter')) {
                         lp.stop();
@@ -151,7 +157,7 @@ let gameStart = (gameOn = false) => {
 
                     if(keyPressed('up') || keyPressed('w')) {
                         if(keyPressed('space') && this.tbo > 0) {
-                            this.spd = Math.min(0.8, this.spd + 0.04);
+                            this.spd = Math.min(0.9, this.spd + 0.04);
                             this.tbo -= 2;
                             this.tboCD = 120;
                         } else {
@@ -183,15 +189,15 @@ let gameStart = (gameOn = false) => {
 
             let moon = Sprite({
                 anchor: {x: 0.5, y: 0.5},
-                x: randInt(208, 240),
-                y: randInt(208, 240),
+                x: randInt(208, 224),
+                y: randInt(208, 224),
                 image: imageAssets['moon']
             });
 
             let earth = Sprite({
                 anchor: {x: 0.5, y: 0.5},
-                x: randInt(272, 304),
-                y: randInt(272, 304),
+                x: randInt(248, 288),
+                y: randInt(248, 288),
                 image: imageAssets['earth']
             });
 

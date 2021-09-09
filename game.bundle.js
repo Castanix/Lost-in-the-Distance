@@ -2241,7 +2241,7 @@
     return !!pressedKeys[key];
   }
 
-  // let { init, Sprite, GameLoop, load, imageAssets, setImagePath, initKeys, keyPressed, randInt, rotatePoint, Text, Vector } = kontra (used when testing without a server, kontra library should be included in index.html);
+  // let { init, Sprite, GameLoop, load, imageAssets, setImagePath, initKeys, keyPressed, randInt, rotatePoint, Text, Vector } = kontra (used when testing without a server, kontra library should be included as a source in index.html);
 
   init();
   initKeys();
@@ -2249,7 +2249,7 @@
 
   /*
   * Updates canvas by increasing the width and height based on player score
-  * Returns the size of the canvas
+  * Return the size of the canvas
   */
   let updtCanvas = (score=0) => {
       let canvas = document.getElementById("game");
@@ -2261,7 +2261,7 @@
   /*
   * Obtains the vertices of a given object and accounts for any rotations
   * Used in the checkSAT function
-  * Returns an array of vertices of given object
+  * Return an array of vertices of given object
   */
   let getV = obj => {
       let objX = obj.x;
@@ -2282,9 +2282,9 @@
   };
 
   /*
-  * A collision checker that accounts for rotated object
+  * A collision checker for two given objects that accounts for rotation
   * Uses the Separating Axis Theorem (SAT)
-  * Returns true for collision between two given objects, false otherwise
+  * Return true for collision between two given objects, false otherwise
   */
   let checkSAT = (obj1, obj2) => {
       let obj1V = getV(obj1);
@@ -2321,7 +2321,7 @@
   };
 
   /*
-  * A function called to start or restart the game
+  * A function called to start or restart (if gameOn) the game
   * Loads all assets required
   * Initializes and creates all game variables, sprite objects, and factories required
   * All game events occur within this function in the game loop
@@ -2329,6 +2329,12 @@
   let gameStart = (gameOn = false) => {
       load('map-indexed.png', 'player.png', 'rock.png', 'fuel.png', 'earth.png', 'moon.png').then(
           () => {
+              /*
+              * rockArr: contains an array of individual rock objects for update and render purposes
+              * fuel: keeps track of the fuel object
+              * spawn: sets the spawn rate for rocks
+              * gameSize: keeps track of the current map size
+              */
               let rockArr = [];
               let fuel = null;
               let spawn = 60;
@@ -2341,6 +2347,7 @@
                   image: imageAssets['map-indexed']
               });
 
+              // Text rendering for menu screen
               let mMenuTxt = factory$4({
                   anchor: {x: 0.5, y:0.5},
                   x: gameSize/2,
@@ -2353,19 +2360,20 @@
                       this.x = gameSize/2;
                       this.y = this.x;
                       if(gameState == 1) {
-                          this.text = "You got hit\nGameover\nEnd1/3\nENTER to restart";
+                          this.text = "You got hit\nENTER to restart";
                       } else if(!gameOn) {
                           this.text = "ENTER to start";
                       } else if(gameState == 2) {
-                          this.text = "You land on the moon\nEnd2/3\nENTER to restart";
+                          this.text = "You land on the moon\nEnd1/2\nENTER to restart";
                       } else {
-                          this.text = "You returned to earth!\nEnd3/3\nENTER to restart";
+                          this.text = "You returned to earth!\nEnd2/2\nENTER to restart";
                       }                    if(keyPressed('enter')) {
                           lp.stop();
                           gameStart(true);
                       }                }
               });
 
+              // Vector clamp used to keep player within game boundry
               let vector = factory$1(80, 80);
               vector.clamp(0, 0, 160, 160);
               let player = factory$3({
@@ -2383,7 +2391,7 @@
                       }
                       if(keyPressed('up') || keyPressed('w')) {
                           if(keyPressed('space') && this.tbo > 0) {
-                              this.spd = Math.min(0.8, this.spd + 0.04);
+                              this.spd = Math.min(0.9, this.spd + 0.04);
                               this.tbo -= 2;
                               this.tboCD = 120;
                           } else {
@@ -2410,18 +2418,19 @@
 
               let moon = factory$3({
                   anchor: {x: 0.5, y: 0.5},
-                  x: randInt(208, 240),
-                  y: randInt(208, 240),
+                  x: randInt(208, 224),
+                  y: randInt(208, 224),
                   image: imageAssets['moon']
               });
 
               let earth = factory$3({
                   anchor: {x: 0.5, y: 0.5},
-                  x: randInt(272, 304),
-                  y: randInt(272, 304),
+                  x: randInt(248, 288),
+                  y: randInt(248, 288),
                   image: imageAssets['earth']
               });
 
+              // Text rendering for score
               let scrTxt = factory$4({
                   x: 70,
                   score: 0,
@@ -2434,6 +2443,7 @@
                   }
               });
 
+              // Text rendering for turbo
               let tboTxt = factory$4({
                   font: '12px Arial',
                   text: `Turbo: ${player.tbo}`,
@@ -2467,7 +2477,7 @@
               };
 
               /*
-              * Creates a rock/asteroid object on the edge of the given map size
+              * Creates a rock/asteroid object on a random edge of the given map size
               * Sets a random linear path and velocity
               * Returns the rock sprite object
               */
@@ -2505,7 +2515,7 @@
                   });
               };
 
-              // The game loop function checks for any events in-game and updates and renders appropriately
+              // The game loop function checks for any events in-game and updates and renders accordingly
               let lp = GameLoop({
                   update: function() {
                       bkgd.update();
@@ -2534,12 +2544,15 @@
                           gameSize = updtCanvas(scrTxt.score);
                           fuel.update();
 
+                          // Checks for rock/asteroid limit and spawns more accordingly
                           if(rockArr.length < Math.min(scrTxt.score, 50)) {
                               if(spawn <=0) {
                                   for(let i=0; i<randInt(Math.min(Math.ceil(scrTxt.score/20), 3), Math.min(Math.floor(scrTxt.score/10), 5)); i++) {
                                       rockArr.push(rockFactory(gameSize));
                                   }                                spawn = randInt(15, 30);
-                              }                        }                        rockArr = rockArr.filter(rock => {
+                              }                        }
+                          // Filters out rock/asteroids not within game boundry
+                          rockArr = rockArr.filter(rock => {
                               if(rock.x >= -5 && rock.x <= gameSize+5 && rock.y >= -5 && rock.y <= gameSize+5) {
                                   if((player.x < rock.x+8 || player.x > rock.x-8) && (player.y < rock.y+8 || player.y > rock.y-8)) {
                                       if(!checkSAT(player, rock)) {
@@ -2547,6 +2560,7 @@
                                       }                                }                                rock.update();
                                   return rock;
                               }                        });
+
                           spawn--;
                       }                },
 
